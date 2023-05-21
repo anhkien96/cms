@@ -17,7 +17,7 @@ class file {
         $file->ext = strtolower($info['extension']);
         $file->base = $info['filename'];
         $file->name = $file->base . '.' . $file->ext;
-        $file->mine = mime_content_type($file->tmp_name);
+        $file->mime = mime_content_type($file->tmp_name);
         $file->type = $type;
 
         return $file;
@@ -34,7 +34,7 @@ class file {
 
 class file_manager {
 
-    private static $list = [], $group = [];
+    private static $list = [], $group = [], $map = ['jpg' => 'jpeg'];
 
     private static function to_group($type, $file) {
         if (empty(self::$group[$type])) {
@@ -118,7 +118,7 @@ class upload {
 
         foreach ($group as $list) {
             foreach ($list as $file) {
-                if ((self::$allow_all || isset($allow[$file->mine])) && ($file->type == $file->mine)) {
+                if ((self::$allow_all || isset($allow[$file->mime])) && ($file->type == $file->mime)) {
 
                 }
                 else {
