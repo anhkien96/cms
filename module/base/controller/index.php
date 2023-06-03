@@ -1,13 +1,13 @@
 <?php
 
-namespace base\controller;
+namespace Base\Controller;
 
-class index {
+class Index {
 
     public function index() {
-        \base\helper\upload::allow_all();
-        \base\helper\upload::max_size(['image/png' => 6]);
-        \base\helper\upload::validate();
+        // \base\helper\upload::allow_all();
+        // \base\helper\upload::max_size(['image/png' => 6]);
+        // \base\helper\upload::validate();
         echo 'index /';
     }
 }

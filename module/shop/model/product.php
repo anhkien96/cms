@@ -1,7 +1,7 @@
 <?php
 
-namespace shop\model;
+namespace Shop\Model;
 
-class product {
+class Product {
 
 }

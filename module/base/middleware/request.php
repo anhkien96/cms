@@ -1,9 +1,9 @@
 <?php
 
-namespace base\middleware;
-use req;
+namespace Base\Middleware;
+use Req;
 
-class request {
+class Request {
 
     private function trim(&$data) {
         foreach ($data as $key => &$val) {
@@ -26,7 +26,8 @@ class request {
 
         if ($_FILES) {
             // validate, boot storage, ...
-            \base\helper\upload::run();
+
+            // \Base\Helper\Upload::run();
         }
         
         $next();

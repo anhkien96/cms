@@ -1,14 +1,21 @@
 <?php
 
-namespace kien\controller;
-use req;
+namespace Kien\Controller;
+use Req;
 
-class index {
+class Index {
 
     public static function index() {
-        req::allow('GET');
+
+        \App::move('/admin');
+        echo '<hr/>';
+        \App::move('/base/index/index/id/222');
+        echo '<hr/>';
+
+
+        Req::allow('GET');
         
-        echo 'id: '.req::param('id').'; name: '.req::param('name').'<br/>';
+        echo 'id: '.Req::param('id').'; name: '.Req::param('name').'<br/>';
         echo 'kien index<br>';
         echo '<br/>';
 

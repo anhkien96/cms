@@ -1,8 +1,8 @@
 <?php
 
-namespace base\admin\controller;
+namespace Base\Admin\Controller;
 
-class index {
+class Index {
 
     public function index() {
         echo 'admin index';

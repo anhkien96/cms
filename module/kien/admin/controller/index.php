@@ -1,8 +1,8 @@
 <?php
 
-namespace kien\admin\controller;
+namespace Kien\Admin\Controller;
 
-class index {
+class Index {
 
     public function index() {
         echo 'admin index';

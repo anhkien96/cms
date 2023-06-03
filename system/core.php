@@ -1,5 +1,5 @@
 <?php
-class req {
+class Req {
     private static $param = [], $method;
 
     public static function run() {
@@ -59,12 +59,12 @@ class req {
     }
 }
 
-class app {
+class App {
 
-    private static $mod, $map = [], $middle = [], $admin_middle = [];
+    private static $mod, $is_admin, $module, $control, $action, $map = [], $middle = [], $admin_middle = [], $middle_pos = 0, $admin_middle_pos = 0, $is_sort = [false, false];
 
     public static function run() {
-        req::run();
+        Req::run();
         self::$mod = require(ROOT. 'config/module.php');
         require (ROOT. 'generate/app.php');
         self::autoload();
@@ -81,56 +81,117 @@ class app {
         });
     }
 
-    public static function middleware($module, $name) {
-        self::$middle[] = [$module, $name];
+    public static function middleware($module, $name, $pos = null) {
+        if ($pos != null) {
+            if ($pos > self::$middle_pos) {
+                self::$middle_pos = $pos;
+            }
+        }
+        else {
+            $pos = (self::$middle_pos = self::$middle_pos + 10);
+        }
+        self::$middle[] = [$module, $name, $pos];
     }
 
-    public static function admin_middleware($module, $name) {
-        self::$admin_middle[] = [$module, $name];
+    public static function admin_middleware($module, $name, $pos = null) {
+        if ($pos != null) {
+            if ($pos > self::$admin_middle_pos) {
+                self::$admin_middle_pos = $pos;
+            }
+        }
+        else {
+            $pos = (self::$admin_middle_pos = self::$admin_middle_pos + 10);
+        }
+        self::$admin_middle[] = [$module, $name, $pos];
     }
 
     public static function map($path, $dest) {
         self::$map[$path] = $dest;
     }
 
-    private static function route($module, $control, $action, $is_admin = false) {
+    public static function set_module($module) {
+        self::$module = $module;
+    }
 
-        if (!empty(self::$mod[$module]) && file_exists($file = MOD. $module .($is_admin? '/admin': ''). '/controller/'.$control.'.php')) {
-            require ($file);
+    public static function get_module($module) {
+        return $module;
+    }
 
-            $name = '\\'.$module.($is_admin? '\admin': '').'\controller\\'.$control;
-            $next = [new $name(), $action];
+    public static function set_controller($control) {
+        self::$control = $control;
+    }
 
-//            $middle = $is_admin? array_merge(array_reverse(self::$admin_middle), array_reverse(self::$middle)): array_reverse(self::$middle);
-//
-//            foreach ($middle as $_) {
-//                $next = function() use ($_, $next, $module, $control, $action) {
-//                    require (MOD. $_[0] .$_[2].'/middleware/'.$_[1].'.php');
-//                    $name = '\\'.$_[0].($_[2]? '\admin': '').'\middleware\\'.$_[1];
-//                    [new $name(), 'handle']($next);
-//                };
-//            }
+    public static function get_controller($control) {
+        return $control;
+    }
 
-            if ($is_admin) {
-                foreach (array_reverse(self::$admin_middle) as $_) {
-                    $next = function() use ($_, $next, $module, $control, $action) {
-                        require (MOD. $_[0] .'/admin/middleware/'.$_[1].'.php');
-                        $name = '\\'.$_[0]. '\admin\middleware\\'.$_[1];
-                        [new $name(), 'handle']($next, $module, $control, $action);
-                    };
-                }
+    public static function set_action($action) {
+        self::$action = $action;
+    }
+
+    public static function get_action($action) {
+        return $action;
+    }
+
+    public static function move($path) {
+        self::match($path);
+    }
+
+    private static function uri2class($val) {
+        $val = str_replace(['-', '_'], ' ', $val);
+        $val = ucwords($val);
+        $val = str_replace(' ', '', $val);
+        return $val;
+    }
+
+    private static function route() {
+
+        $next = function() {
+            $module = self::uri2class(self::$module);
+            $control = self::uri2class(self::$control);
+            // $action = self::uri2class(self::$action);
+            if (!empty(self::$mod[$module]) && file_exists($file = MOD. $module .(self::$is_admin? '/Admin': ''). '/Controller/'.$control.'.php')) {
+                require_once ($file);
+                $name = '\\'.$module.(self::$is_admin? '\Admin': '').'\Controller\\'.$control;
+                [new $name(), self::$action](); 
             }
+        };
 
-            foreach (array_reverse(self::$middle) as $_) {
-                $next = function() use ($_, $next, $module, $control, $action) {
-                    require (MOD. $_[0] .'/middleware/'.$_[1].'.php');
-                    $name = '\\'.$_[0].'\middleware\\'.$_[1];
-                    [new $name(), 'handle']($next, $module, $control, $action);
+        if (self::$is_admin) {
+            if (!self::$is_sort[1]) {
+                self::$is_sort[1] = true;
+
+                usort(self::$admin_middle, function($m1, $m2) {
+                    return $m2[2] - $m1[2];
+                });
+            }
+            
+            foreach (self::$admin_middle as $_) {
+                $next = function() use ($_, $next) {
+                    require_once (MOD. $_[0] .'/Admin/Middleware/'.$_[1].'.php');
+                    $name = '\\'.$_[0]. '\Admin\Middleware\\'.$_[1];
+                    [new $name(), 'handle']($next);
                 };
             }
-
-            $next();
         }
+
+        if (!self::$is_sort[0]) {
+            self::$is_sort[0] = true;
+
+            usort(self::$middle, function($m1, $m2) {
+                return $m2[2] - $m1[2];
+            });
+        }
+    
+        foreach (self::$middle as $_) {
+            $next = function() use ($_, $next) {
+                require_once (MOD. $_[0] .'/Middleware/'.$_[1].'.php');
+                $name = '\\'.$_[0].'\Middleware\\'.$_[1];
+                [new $name(), 'handle']($next);
+            };
+        }
+
+        $next();
     }
 
     private static function match($path) {
@@ -152,18 +213,23 @@ class app {
         if ($_[0]) {
             if ($_[0] == 'admin') {
                 array_shift($_);
-                self::parse($_, true);
+                self::$is_admin = true;
             }
             else {
-                self::parse($_);
+                self::$is_admin = false;
             }
+            self::parse($_);
         }
         else {
-            self::route('base', 'index', 'index');
+            self::set_module('base');
+            self::set_controller('index');
+            self::set_action('index');
+
+            self::route();
         }
     }
 
-    private static function parse($_, $is_admin = false) {
+    private static function parse($_) {
         if (isset($_[0])) {
             $module = str_replace('-', '_', $_[0]);
             if (isset($_[1])) {
@@ -195,6 +261,10 @@ class app {
             $action = 'index';
         }
         
-        self::route($module, $control, $action, $is_admin);
+        self::set_module($module);
+        self::set_controller($control);
+        self::set_action($action);
+
+        self::route();
     }
 }

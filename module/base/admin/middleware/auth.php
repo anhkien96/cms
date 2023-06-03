@@ -1,8 +1,8 @@
 <?php
 
-namespace base\admin\middleware;
+namespace Base\Admin\Middleware;
 
-class auth {
+class Auth {
 
     public function handle($next) {
         echo 'admin_auth';

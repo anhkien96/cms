@@ -1,10 +1,13 @@
 <?php
 
-app::admin_middleware('base', 'auth');
+App::admin_middleware('Base', 'Auth');
 
-app::middleware('base', 'request');
+App::middleware('Base', 'Request');
+// App::middleware('Base', '1');
+// App::middleware('Base', '2');
+// App::middleware('Base', '3', -1);
 
-app::map('hi/(\d+)/([-\w]+)', 'kien/index/index/id/$1/name/$2');
+App::map('hi/(\d+)/([-\w]+)', 'kien/index/index/id/$1/name/$2');
 
 // dùng route cache lấy từ các module
 

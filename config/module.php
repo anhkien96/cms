@@ -1,6 +1,6 @@
 <?php
 
 return [
-    'base' => 1,
-    'kien' => 1
+    'Base' => 1,
+    'Kien' => 1
 ];
