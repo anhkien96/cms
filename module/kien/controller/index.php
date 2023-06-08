@@ -7,6 +7,8 @@ class Index {
 
     public static function index() {
 
+        // \App::redirect('/');
+
         \App::move('/admin');
         echo '<hr/>';
         \App::move('/base/index/index/id/222');

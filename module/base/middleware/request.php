@@ -28,6 +28,8 @@ class Request {
             // validate, boot storage, ...
 
             // \Base\Helper\Upload::run();
+
+            // upload ảnh xong (hay tùy loại file set permission) chỉ read, không được thực thi execute
         }
         
         $next();

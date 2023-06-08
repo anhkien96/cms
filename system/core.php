@@ -137,6 +137,11 @@ class App {
         self::match($path);
     }
 
+    public static function redirect($url) {
+        header('Location: '.$url);
+        exit;
+    }
+
     private static function uri2class($val) {
         $val = str_replace(['-', '_'], ' ', $val);
         $val = ucwords($val);
@@ -149,11 +154,13 @@ class App {
         $next = function() {
             $module = self::uri2class(self::$module);
             $control = self::uri2class(self::$control);
-            // $action = self::uri2class(self::$action);
             if (!empty(self::$mod[$module]) && file_exists($file = MOD. $module .(self::$is_admin? '/Admin': ''). '/Controller/'.$control.'.php')) {
                 require_once ($file);
                 $name = '\\'.$module.(self::$is_admin? '\Admin': '').'\Controller\\'.$control;
-                [new $name(), self::$action](); 
+                $action = [new $name(), str_replace('-', '_', self::$action)];
+                if (is_callable($action)) {
+                    $action();
+                }
             }
         };
 
@@ -231,9 +238,9 @@ class App {
 
     private static function parse($_) {
         if (isset($_[0])) {
-            $module = str_replace('-', '_', $_[0]);
+            $module = $_[0];
             if (isset($_[1])) {
-                $control = str_replace('_', '_', $_[1]);
+                $control = $_[1];
                 if (isset($_[2])) {
                     $action = $_[2];
                 }
